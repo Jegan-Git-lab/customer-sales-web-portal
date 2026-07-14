@@ -11,6 +11,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy client to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
+        env:
+          VITE_API_BASE_URL: https://contoso-portal-api.azurewebsites.net
+          VITE_STAFF_CLIENT_ID: 4e24659a-6953-403c-93d3-3240b7f1e247
+          VITE_STAFF_TENANT_ID: 43550014-b348-44b4-b7ad-f9f10ec3d765
+          VITE_STAFF_API_SCOPE: api://4e24659a-6953-403c-93d3-3240b7f1e247/access_as_staff
+          VITE_CUSTOMER_CLIENT_ID: 087ed618-e637-4706-82d5-89ea3a809431
+          VITE_CUSTOMER_TENANT_ID: 0893b58c-2661-46a1-8391-4aaeee0834a8
+          VITE_CUSTOMER_TENANT_NAME: customerexternal
+          VITE_CUSTOMER_API_SCOPE: api://087ed618-e637-4706-82d5-89ea3a809431/access_as_customer
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
