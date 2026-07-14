@@ -51,7 +51,7 @@ async function parseJsonOrNull(response) {
 // with the actual Option Set definition in the Dataverse solution.
 const POLICY_STATUS_MAP = {
   Active: 100000000,
-  Lapsed: 100000001,
+  InActive : 100000001,
   Cancelled: 100000002,
   Expired: 100000003,
   'Pending Renewal': 100000004,
@@ -170,21 +170,25 @@ export const dataverseClient = {
     return this.retrieveMultiple('contacts', odataQuery);
   },
  
+  // Verified against this environment's actual Dataverse schema
+  // (EntityDefinitions for new_campaignrun / new_campaignresponse) —
+  // do not rename these without re-checking metadata first.
   async createCampaignRun(criteria, templateSubject, targetCount) {
-    return this.create('contoso_campaignruns', {
-      contoso_segmentcriteria: JSON.stringify(criteria ?? {}),
-      contoso_templatesubject: templateSubject,
-      contoso_targetcount: targetCount,
-      contoso_status: 'Sending',
+    return this.create('new_campaignruns', {
+      new_name: `${templateSubject} - ${new Date().toISOString()}`,
+      new_segmentid: JSON.stringify(criteria ?? {}),
+      new_templateid: templateSubject,
+      new_targetcount: targetCount,
+      new_status: 'Sending',
     });
   },
 
   async recordCampaignResponse(campaignRunId, contactId, eventType) {
-    return this.create('contoso_campaignresponses', {
-      'contoso_campaignrun@odata.bind': `/contoso_campaignruns(${campaignRunId})`,
-      'contoso_contact@odata.bind': `/contacts(${contactId})`,
-      contoso_eventtype: eventType,
-      contoso_eventtimestamp: new Date().toISOString(),
+    return this.create('new_campaignresponses', {
+      'new_campaignrun@odata.bind': `/new_campaignruns(${campaignRunId})`,
+      'new_contact@odata.bind': `/contacts(${contactId})`,
+      new_eventtype: eventType,
+      new_eventtimestamp: new Date().toISOString(),
     });
   },
 };

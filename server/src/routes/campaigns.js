@@ -38,11 +38,11 @@ campaignsRouter.post('/send', requireStaff, async (req, res, next) => {
     // delivery callbacks land. A production build would move this to a
     // background queue rather than awaiting inline.
     await Promise.all(
-      operations.map((op) => dataverseClient.recordCampaignResponse(campaignRun.contoso_campaignrunid, op.contactId, 'Sent'))
+      operations.map((op) => dataverseClient.recordCampaignResponse(campaignRun.new_campaignrunid, op.contactId, 'Sent'))
     );
 
     res.status(201).json({
-      campaignRunId: campaignRun.contoso_campaignrunid,
+      campaignRunId: campaignRun.new_campaignrunid,
       targeted: members.length,
     });
   } catch (err) {
@@ -53,12 +53,12 @@ campaignsRouter.post('/send', requireStaff, async (req, res, next) => {
 campaignsRouter.get('/:id/status', requireStaff, async (req, res, next) => {
   try {
     const responses = await dataverseClient.retrieveMultiple(
-      'contoso_campaignresponses',
-      `$filter=_contoso_campaignrun_value eq ${req.params.id}&$select=contoso_eventtype,contoso_eventtimestamp`
+      'new_campaignresponses',
+      `$filter=_new_campaignrun_value eq ${req.params.id}&$select=new_eventtype,new_eventtimestamp`
     );
 
     const summary = responses.reduce((acc, r) => {
-      acc[r.contoso_eventtype] = (acc[r.contoso_eventtype] ?? 0) + 1;
+      acc[r.new_eventtype] = (acc[r.new_eventtype] ?? 0) + 1;
       return acc;
     }, {});
 
