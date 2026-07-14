@@ -170,21 +170,21 @@ export const dataverseClient = {
     return this.retrieveMultiple('contacts', odataQuery);
   },
  
-  async createCampaignRun(segmentId, templateId, targetCount) {
-    return this.create('new_campaignruns', {
-      new_segmentid: segmentId,
-      new_templateid: templateId,
-      new_targetcount: targetCount,
-      new_status: 'Sending',
+  async createCampaignRun(criteria, templateSubject, targetCount) {
+    return this.create('contoso_campaignruns', {
+      contoso_segmentcriteria: JSON.stringify(criteria ?? {}),
+      contoso_templatesubject: templateSubject,
+      contoso_targetcount: targetCount,
+      contoso_status: 'Sending',
     });
   },
- 
+
   async recordCampaignResponse(campaignRunId, contactId, eventType) {
-    return this.create('new_campaignresponses', {
-      'new_campaignrun@odata.bind': `/new_campaignruns(${campaignRunId})`,
-      'new_contact@odata.bind': `/contacts(${contactId})`,
-      new_eventtype: eventType,
-      new_eventtimestamp: new Date().toISOString(),
+    return this.create('contoso_campaignresponses', {
+      'contoso_campaignrun@odata.bind': `/contoso_campaignruns(${campaignRunId})`,
+      'contoso_contact@odata.bind': `/contacts(${contactId})`,
+      contoso_eventtype: eventType,
+      contoso_eventtimestamp: new Date().toISOString(),
     });
   },
 };
