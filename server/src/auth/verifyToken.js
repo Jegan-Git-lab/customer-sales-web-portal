@@ -12,10 +12,7 @@ const staffJWKS = createRemoteJWKSet(
 );
 
 const customerJWKS = createRemoteJWKSet(
-  new URL(
-    //`https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/discovery/v2.0/keys`
-  `https://0893b58c-2661-46a1-8391-4aaeee0834a8.ciamlogin.com/0893b58c-2661-46a1-8391-4aaeee0834a8/discovery/v2.0/keys`
-  )
+  new URL(`https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/discovery/v2.0/keys`)
 );
 
 export class AuthError extends Error {
@@ -59,8 +56,7 @@ export async function verifyBearerToken(authorizationHeader) {
         audience: staff ? config.staff.apiAppIdUri : config.customer.apiAppIdUri,
         issuer: staff
           ? config.staff.issuer(config.staff.tenantId)
-          :`https://0893b58c-2661-46a1-8391-4aaeee0834a8.ciamlogin.com/0893b58c-2661-46a1-8391-4aaeee0834a8/v2.0`, 
-          //`https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/v2.0`,
+          : `https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/v2.0`,
       }
     );
 
