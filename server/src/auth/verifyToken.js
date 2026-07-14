@@ -11,8 +11,13 @@ const staffJWKS = createRemoteJWKSet(
   new URL(`https://login.microsoftonline.com/${config.staff.tenantId}/discovery/v2.0/keys`)
 );
 
+// The canonical issuer for a CIAM tenant uses the TENANT ID as the
+// ciamlogin.com subdomain, not the friendly tenant name — confirmed against
+// the tenant's own /.well-known/openid-configuration. The tenant name is
+// only used for the client-side MSAL authority (a custom-domain alias);
+// tokens are always issued under the tenant-ID form.
 const customerJWKS = createRemoteJWKSet(
-  new URL(`https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/discovery/v2.0/keys`)
+  new URL(`https://${config.customer.tenantId}.ciamlogin.com/${config.customer.tenantId}/discovery/v2.0/keys`)
 );
 
 export class AuthError extends Error {
@@ -56,7 +61,7 @@ export async function verifyBearerToken(authorizationHeader) {
         audience: staff ? config.staff.apiAppIdUri : config.customer.apiAppIdUri,
         issuer: staff
           ? config.staff.issuer(config.staff.tenantId)
-          : `https://${config.customer.tenantName}.ciamlogin.com/${config.customer.tenantId}/v2.0`,
+          : `https://${config.customer.tenantId}.ciamlogin.com/${config.customer.tenantId}/v2.0`,
       }
     );
 
