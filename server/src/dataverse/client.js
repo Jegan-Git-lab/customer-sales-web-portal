@@ -102,6 +102,56 @@ export const dataverseClient = {
   },
  
   /**
+   * Moves the Business Process Flow pointer on an opportunity to the given
+   * stage. `stepname` (a plain text field) is NOT what drives the BPF pill
+   * bar shown on the form/views — that's driven by `stageid` (a lookup to
+   * a `processstage` record) plus `traversedpath`. Writing only `stepname`
+   * succeeds silently but leaves the visible stage unchanged, so this must
+   * be called alongside (not instead of) the `stepname` update.
+   * Resolves the target `processstage` dynamically against the record's
+   * current active process, since `processstage` GUIDs are environment-
+   * specific and cannot be hardcoded. No-ops (returns null) if the record
+   * has no active BPF instance.
+   */
+  async moveOpportunityBpfStage(opportunityId, targetStageLabel) {
+    const opp = await this.retrieve('opportunities', opportunityId, '$select=traversedpath,stageid');
+    if (!opp?._stageid_value) {
+      console.warn(`[moveOpportunityBpfStage] opportunity ${opportunityId} has no _stageid_value — no active BPF instance, skipping`);
+      return null;
+    }
+
+    const activeStage = await this.retrieve('processstages', opp._stageid_value, '$select=processid,stagename');
+    const processId = activeStage?._processid_value;
+    if (!processId) {
+      console.warn(`[moveOpportunityBpfStage] processstage ${opp._stageid_value} on opportunity ${opportunityId} has no resolvable _processid_value, skipping`, activeStage);
+      return null;
+    }
+
+    const normalize = (s) => (s ?? '').toLowerCase().replace(/^\d+[-\s]*/, '').trim();
+    const target = normalize(targetStageLabel);
+
+    const candidates = await this.retrieveMultiple(
+      'processstages',
+      `$select=processstageid,stagename&$filter=processid eq ${processId}`
+    );
+    const targetStage = candidates.find((s) => normalize(s.stagename) === target);
+    if (!targetStage) {
+      throw new Error(`No Business Process Flow stage matching "${targetStageLabel}" found on this opportunity's active process`);
+    }
+
+    const traversedpath = (opp.traversedpath ?? '').split(',').filter(Boolean);
+    if (!traversedpath.includes(targetStage.processstageid)) {
+      traversedpath.push(targetStage.processstageid);
+    }
+
+    console.log(`[moveOpportunityBpfStage] opportunity ${opportunityId} -> processstage ${targetStage.processstageid} (${targetStage.stagename})`);
+    return this.update('opportunities', opportunityId, {
+      'stageid@odata.bind': `/processstages(${targetStage.processstageid})`,
+      traversedpath: traversedpath.join(','),
+    });
+  },
+
+  /**
    * Runs an aggregate/grouped FetchXML query (used for the pipeline
    * stage-wise summary, which OData alone can't express cleanly).
    */

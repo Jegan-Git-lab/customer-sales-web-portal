@@ -59,6 +59,14 @@ opportunitiesRouter.patch('/:id', requireStaff, async (req, res, next) => {
       ...(toStage ? { stepname: toStage } : {}),
       ...otherFields,
     });
+
+    // stepname alone doesn't move the Business Process Flow pill bar shown
+    // in CRM — that needs stageid/traversedpath updated too. See
+    // dataverseClient.moveOpportunityBpfStage for why.
+    if (toStage) {
+      await dataverseClient.moveOpportunityBpfStage(id, toStage);
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);
