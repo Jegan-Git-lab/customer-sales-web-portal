@@ -132,7 +132,7 @@ export const dataverseClient = {
 
     const candidates = await this.retrieveMultiple(
       'processstages',
-      `$select=processstageid,stagename&$filter=processid eq ${processId}`
+      `$select=processstageid,stagename&$filter=_processid_value eq ${processId}`
     );
     const targetStage = candidates.find((s) => normalize(s.stagename) === target);
     if (!targetStage) {
