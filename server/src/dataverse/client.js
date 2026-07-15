@@ -104,26 +104,45 @@ export const dataverseClient = {
   /**
    * Moves the Business Process Flow pointer on an opportunity to the given
    * stage. `stepname` (a plain text field) is NOT what drives the BPF pill
-   * bar shown on the form/views — that's driven by `stageid` (a lookup to
-   * a `processstage` record) plus `traversedpath`. Writing only `stepname`
-   * succeeds silently but leaves the visible stage unchanged, so this must
-   * be called alongside (not instead of) the `stepname` update.
+   * bar shown on the form/views — that's driven by `stageid` plus
+   * `traversedpath`. Writing only `stepname` succeeds silently but leaves
+   * the visible stage unchanged, so this must be called alongside (not
+   * instead of) the `stepname` update.
+   *
+   * NOTE: unlike a normal lookup, `opportunity.stageid`/`processid` are
+   * Edm.Guid-typed fields, not true EntityReference lookups — Dataverse
+   * returns/accepts them as plain `stageid`/`processid` values (confirmed
+   * against this environment), NOT `_stageid_value`/`@odata.bind`, even
+   * though entity metadata exposes a pseudo-relationship for UI/expand
+   * purposes. `processstage.processid`, by contrast, IS a normal lookup
+   * (hence `_processid_value` below when reading/filtering on it).
+   *
    * Resolves the target `processstage` dynamically against the record's
    * current active process, since `processstage` GUIDs are environment-
    * specific and cannot be hardcoded. No-ops (returns null) if the record
    * has no active BPF instance.
+   *
+   * Uses `retrieveMultiple` with a `$filter`, NOT `retrieve` (single-entity
+   * GET by key) — confirmed against this environment that `/opportunities
+   * (id)?$select=stageid,traversedpath` returns both as null even when
+   * they're genuinely set (same @odata.etag as a `$filter` collection query
+   * that returns the real values), a Dataverse caching quirk specific to
+   * these process-pointer fields on the by-key endpoint.
    */
   async moveOpportunityBpfStage(opportunityId, targetStageLabel) {
-    const opp = await this.retrieve('opportunities', opportunityId, '$select=traversedpath,stageid');
-    if (!opp?._stageid_value) {
-      console.warn(`[moveOpportunityBpfStage] opportunity ${opportunityId} has no _stageid_value — no active BPF instance, skipping`);
+    const [opp] = await this.retrieveMultiple(
+      'opportunities',
+      `$select=traversedpath,stageid&$filter=opportunityid eq ${opportunityId}`
+    );
+    if (!opp?.stageid) {
+      console.warn(`[moveOpportunityBpfStage] opportunity ${opportunityId} has no stageid — no active BPF instance, skipping`);
       return null;
     }
 
-    const activeStage = await this.retrieve('processstages', opp._stageid_value, '$select=processid,stagename');
+    const activeStage = await this.retrieve('processstages', opp.stageid, '$select=processid,stagename');
     const processId = activeStage?._processid_value;
     if (!processId) {
-      console.warn(`[moveOpportunityBpfStage] processstage ${opp._stageid_value} on opportunity ${opportunityId} has no resolvable _processid_value, skipping`, activeStage);
+      console.warn(`[moveOpportunityBpfStage] processstage ${opp.stageid} on opportunity ${opportunityId} has no resolvable _processid_value, skipping`, activeStage);
       return null;
     }
 
@@ -146,7 +165,13 @@ export const dataverseClient = {
 
     console.log(`[moveOpportunityBpfStage] opportunity ${opportunityId} -> processstage ${targetStage.processstageid} (${targetStage.stagename})`);
     return this.update('opportunities', opportunityId, {
-      'stageid@odata.bind': `/processstages(${targetStage.processstageid})`,
+      // Despite `stageid` being modeled as a lookup in entity metadata,
+      // Dataverse rejects it via the normal `@odata.bind` navigation-property
+      // syntax here (400 "Specified cast is not valid" deep in CRM's own
+      // conversion pipeline) — confirmed against this environment. The
+      // plain attribute name with a raw GUID value is what Dataverse
+      // actually expects for process-stage fields.
+      stageid: targetStage.processstageid,
       traversedpath: traversedpath.join(','),
     });
   },
