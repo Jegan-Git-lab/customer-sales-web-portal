@@ -57,6 +57,14 @@ const POLICY_STATUS_MAP = {
   'Pending Renewal': 100000004,
   Suspended: 100000005,
 };
+
+// Maps new_campaignresponse's new_eventtype Picklist label -> Edm.Int32 value.
+const CAMPAIGN_EVENT_TYPE_MAP = {
+  Sent: 100000000,
+  Opened: 100000001,
+  Clicked: 100000002,
+  Bounced: 100000003,
+};
  
 export const dataverseClient = {
   /**
@@ -248,21 +256,30 @@ export const dataverseClient = {
   // Verified against this environment's actual Dataverse schema
   // (EntityDefinitions for new_campaignrun / new_campaignresponse) —
   // do not rename these without re-checking metadata first.
+  //
+  // new_segmentid and new_templateid are plain Edm.Int32 fields, not
+  // Lookups — there's no Segment/Template entity behind them in this
+  // schema, so there's no real id to store. new_name carries the
+  // human-readable subject instead. new_status is a Picklist; its
+  // option values (from new_campaignrun_new_status) are
+  // Sending=100000000, Completed=100000001, Failed=100000002.
   async createCampaignRun(criteria, templateSubject, targetCount) {
     return this.create('new_campaignruns', {
       new_name: `${templateSubject} - ${new Date().toISOString()}`,
-      new_segmentid: JSON.stringify(criteria ?? {}),
-      new_templateid: templateSubject,
       new_targetcount: targetCount,
-      new_status: 'Sending',
+      new_status: 100000000,
     });
   },
 
   async recordCampaignResponse(campaignRunId, contactId, eventType) {
+    const eventTypeValue = CAMPAIGN_EVENT_TYPE_MAP[eventType];
+    if (eventTypeValue === undefined) {
+      throw new Error(`Unknown new_eventtype label: "${eventType}"`);
+    }
     return this.create('new_campaignresponses', {
       'new_campaignrun@odata.bind': `/new_campaignruns(${campaignRunId})`,
       'new_contact@odata.bind': `/contacts(${contactId})`,
-      new_eventtype: eventType,
+      new_eventtype: eventTypeValue,
       new_eventtimestamp: new Date().toISOString(),
     });
   },
