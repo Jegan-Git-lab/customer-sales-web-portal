@@ -19,7 +19,10 @@ import { profileRouter } from './routes/profile.js';
 
 const app = express();
 
-app.use(express.json({ limit: '2mb' }));
+// 10mb accommodates a ~5MB ticket attachment (base64 inflates size ~33%,
+// plus JSON overhead) — see MAX_ATTACHMENT_BYTES in routes/tickets.js, which
+// is the actual enforced limit on the decoded file.
+app.use(express.json({ limit: '10mb' }));
 
 // Locked-down CORS — only the deployed Static Web App origin, no wildcards.
 app.use(

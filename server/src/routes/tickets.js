@@ -6,6 +6,10 @@ export const ticketsRouter = Router();
 
 const ALLOWED_CATEGORIES = ['Billing', 'Claims', 'PolicyChange', 'General'];
 
+// Dataverse's org-wide default max attachment size is 5MB — matches that so
+// uploads that would be rejected by Dataverse anyway fail fast client-side.
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+
 // Choice (Option Set) label -> underlying Edm.Int32 value for
 // incidents.casetypecode. Dataverse rejects the string label directly
 // (0x80048d19 "Cannot convert the literal ... to the expected type
@@ -19,6 +23,14 @@ const CASE_TYPE_MAP = {
   PolicyChange: 3,
   General: 4,
 };
+
+// incidents.caseorigincode is the standard Dataverse global option set
+// (not a custom one), where 3 = "Web" out of the box (1 = Phone, 2 = Email).
+// Stamped on every ticket this API creates so unified routing and
+// origin-based reporting can distinguish this channel from email-to-case
+// and the chatbot's escalation path — confirm the value hasn't been
+// customized in this environment before relying on it.
+const CASE_ORIGIN_WEB = 3;
 
 // GET /api/tickets
 // Staff: can see a broader (still server-validated) view.
@@ -71,13 +83,26 @@ ticketsRouter.get('/:id', attachCustomerContactIfCustomer, async (req, res, next
 // POST /api/tickets — customers raise a new ticket against themselves only.
 ticketsRouter.post('/', attachCustomerContactIfCustomer, async (req, res, next) => {
   try {
-    const { title, category, description } = req.body;
+    const { title, category, description, attachment } = req.body;
 
     if (!title || !description) {
       return res.status(400).json({ error: 'title and description are required' });
     }
     if (category && !ALLOWED_CATEGORIES.includes(category)) {
       return res.status(400).json({ error: `category must be one of ${ALLOWED_CATEGORIES.join(', ')}` });
+    }
+    if (attachment) {
+      if (!attachment.filename || !attachment.body) {
+        return res.status(400).json({ error: 'attachment requires filename and body' });
+      }
+      // Decoded (raw) size, not the inflated base64 length, is what
+      // actually counts against Dataverse's attachment size limit.
+      const decodedBytes = Buffer.byteLength(attachment.body, 'base64');
+      if (decodedBytes > MAX_ATTACHMENT_BYTES) {
+        return res.status(400).json({
+          error: `attachment exceeds maximum size of ${MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB`,
+        });
+      }
     }
 
     // Staff creating on behalf of a customer must pass an explicit
@@ -91,9 +116,20 @@ ticketsRouter.post('/', attachCustomerContactIfCustomer, async (req, res, next) 
     const created = await dataverseClient.create('incidents', {
       title,
       casetypecode: CASE_TYPE_MAP[category ?? 'General'],
+      caseorigincode: CASE_ORIGIN_WEB,
       description,
       'customerid_contact@odata.bind': `/contacts(${customerId})`,
     });
+
+    if (attachment) {
+      await dataverseClient.create('annotations', {
+        subject: `Attachment: ${attachment.filename}`,
+        filename: attachment.filename,
+        documentbody: attachment.body,
+        mimetype: attachment.contentType ?? 'application/octet-stream',
+        'objectid_incident@odata.bind': `/incidents(${created.incidentid})`,
+      });
+    }
 
     res.status(201).json(created);
   } catch (err) {

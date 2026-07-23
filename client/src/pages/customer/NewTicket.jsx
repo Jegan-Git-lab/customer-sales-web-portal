@@ -4,23 +4,50 @@ import { useApi } from '../../hooks/useApi';
 
 const CATEGORIES = ['Billing', 'Claims', 'PolicyChange', 'General'];
 
+// Matches the server's MAX_ATTACHMENT_BYTES (server/src/routes/tickets.js) —
+// checked client-side too so oversized files fail fast without a round trip.
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(reader.error ?? new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function NewTicket() {
   const { call } = useApi();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [description, setDescription] = useState('');
+  const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
     setError(null);
+
+    if (file && file.size > MAX_ATTACHMENT_BYTES) {
+      setError(`Attachment exceeds maximum size of ${MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB`);
+      return;
+    }
+
     setSubmitting(true);
     try {
+      const attachment = file
+        ? { filename: file.name, contentType: file.type, body: await readFileAsBase64(file) }
+        : undefined;
+
       // customerId is never sent from the client for this persona — the
       // API resolves it server-side from the authenticated token.
-      const ticket = await call('/api/tickets', { method: 'POST', body: { title, category, description } });
+      const ticket = await call('/api/tickets', {
+        method: 'POST',
+        body: { title, category, description, attachment },
+      });
       navigate(`/tickets/${ticket.incidentid}`);
     } catch (err) {
       setError(err.message);
@@ -52,8 +79,8 @@ export default function NewTicket() {
         </div>
         <div className="field">
           <label>Attachment (optional)</label>
-          <input type="file" />
-          <p className="muted">Attachment upload wires to Dataverse annotations — see README.</p>
+          <input type="file" onChange={(e) => setFile(e.target.files[0] ?? null)} />
+          <p className="muted">Max {MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB.</p>
         </div>
         <button type="submit" disabled={submitting}>Submit ticket</button>
       </form>

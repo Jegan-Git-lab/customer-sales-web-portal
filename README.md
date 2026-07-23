@@ -311,26 +311,20 @@ customers list/detail/comment access to their own cases, with row-level
 isolation enforced server-side (404, not 403, on a mismatched
 `_customerid_value`).
 
-**Gaps still open against the A5 spec:**
-- **Attachment handling into DMS** — not wired yet. `NewTicket.jsx` has a
-  placeholder file input; wiring it to Dataverse `annotations` (or
-  wherever the DMS of record actually lives) is listed under "What's
-  stubbed" below.
-- **`caseorigincode`** — `POST /api/tickets` doesn't currently set the
-  case's origin. Email-to-case and the chatbot's escalation path will
-  each stamp their own origin; this channel should stamp "Web" so unified
-  routing (and any origin-based reporting) can distinguish channels
-  consistently regardless of which of the three created the case.
+**Gaps closed:** `caseorigincode` is now stamped as "Web" (`CASE_ORIGIN_WEB`
+in `tickets.js`) on every ticket this channel creates, so unified routing
+and origin-based reporting can distinguish it from email-to-case and the
+chatbot's escalation path.
 
 **Unified routing — already compatible by omission.** This API never
 sets `ownerid` or a queue on ticket creation (`tickets.js`, `POST /`) —
 cases land unassigned, exactly what Unified Routing needs to pick them up
 and apply the same sentiment/priority/classification rules it applies to
 email- and chat-originated cases. No special-casing was needed here; the
-main follow-up is populating `caseorigincode` (above) and, if A5's
-priority/sentiment scoring depends on case text, making sure `title`/
-`description` are populated richly enough for that classification step to
-work as well on a web-submitted case as an emailed one.
+main remaining consideration is that, if A5's priority/sentiment scoring
+depends on case text, `title`/`description` are populated richly enough
+for that classification step to work as well on a web-submitted case as
+an emailed one.
 
 **Chatbot escalation — reuse, don't duplicate.** A5's chatbot needs to
 call a Function App/API for case creation on escalation. Rather than a
@@ -344,8 +338,6 @@ three.
 
 ## What's stubbed / left for you
 
-- Ticket attachment upload isn't wired to Dataverse `annotations` yet —
-  the form field is present in `NewTicket.jsx` as a placeholder.
 - Table/entity/field logical names (`contoso_*` custom fields, `incidents`
   for cases, etc.) are illustrative — swap in your actual Dataverse schema.
 - No IaC (Bicep/Terraform) included for provisioning the Azure resources
