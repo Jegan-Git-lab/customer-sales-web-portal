@@ -115,7 +115,7 @@ export default function EdmWorkspace() {
       {sendResult && (
         <div className="card">
           <h3>3. Send status</h3>
-          <p>Targeted {sendResult.targeted} contacts. Run ID: {sendResult.campaignRunId}</p>
+          <p>Targeted {sendResult.targeted} contacts. Name: {sendResult.name}</p>
           <button onClick={checkStatus}>Refresh status</button>
           {status && (
             <ul>

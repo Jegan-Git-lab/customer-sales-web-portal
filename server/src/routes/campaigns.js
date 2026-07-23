@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireStaff } from '../auth/middleware.js';
-import { dataverseClient } from '../dataverse/client.js';
+import { dataverseClient, CAMPAIGN_EVENT_TYPE_LABELS } from '../dataverse/client.js';
 import { sendCampaignBatches } from '../services/acsEmail.js';
 
 export const campaignsRouter = Router();
@@ -43,6 +43,7 @@ campaignsRouter.post('/send', requireStaff, async (req, res, next) => {
 
     res.status(201).json({
       campaignRunId: campaignRun.new_campaignrunid,
+      name: campaignRun.new_name,
       targeted: members.length,
     });
   } catch (err) {
@@ -58,7 +59,8 @@ campaignsRouter.get('/:id/status', requireStaff, async (req, res, next) => {
     );
 
     const summary = responses.reduce((acc, r) => {
-      acc[r.new_eventtype] = (acc[r.new_eventtype] ?? 0) + 1;
+      const label = CAMPAIGN_EVENT_TYPE_LABELS[r.new_eventtype] ?? r.new_eventtype;
+      acc[label] = (acc[label] ?? 0) + 1;
       return acc;
     }, {});
 

@@ -59,12 +59,16 @@ const POLICY_STATUS_MAP = {
 };
 
 // Maps new_campaignresponse's new_eventtype Picklist label -> Edm.Int32 value.
-const CAMPAIGN_EVENT_TYPE_MAP = {
+export const CAMPAIGN_EVENT_TYPE_MAP = {
   Sent: 100000000,
   Opened: 100000001,
   Clicked: 100000002,
   Bounced: 100000003,
 };
+
+export const CAMPAIGN_EVENT_TYPE_LABELS = Object.fromEntries(
+  Object.entries(CAMPAIGN_EVENT_TYPE_MAP).map(([label, value]) => [value, label])
+);
  
 export const dataverseClient = {
   /**
