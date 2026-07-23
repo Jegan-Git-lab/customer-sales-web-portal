@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
+import { caseTypeLabel, statusLabel } from '../../lib/ticketLabels';
 
 export default function TicketList() {
   const { call } = useApi();
@@ -36,8 +37,8 @@ export default function TicketList() {
               {tickets.map((t) => (
                 <tr key={t.incidentid}>
                   <td>{t.title}</td>
-                  <td>{t.casetypecode}</td>
-                  <td><span className="status-pill">{t.statuscode}</span></td>
+                  <td>{caseTypeLabel(t.casetypecode)}</td>
+                  <td><span className="status-pill">{statusLabel(t.statuscode)}</span></td>
                   <td>{t.createdon?.slice(0, 10)}</td>
                   <td><Link to={`/tickets/${t.incidentid}`}>View</Link></td>
                 </tr>

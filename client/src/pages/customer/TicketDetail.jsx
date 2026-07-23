@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
+import { caseTypeLabel, statusLabel } from '../../lib/ticketLabels';
 
 export default function TicketDetail() {
   const { id } = useParams();
@@ -47,7 +48,7 @@ export default function TicketDetail() {
     <div>
       <h2>{ticket.title}</h2>
       <div className="card">
-        <p><span className="status-pill">{ticket.statuscode}</span> · {ticket.casetypecode}</p>
+        <p><span className="status-pill">{statusLabel(ticket.statuscode)}</span> · {caseTypeLabel(ticket.casetypecode)}</p>
         <p>{ticket.description}</p>
         <p className="muted">Opened {ticket.createdon?.slice(0, 10)}</p>
       </div>
