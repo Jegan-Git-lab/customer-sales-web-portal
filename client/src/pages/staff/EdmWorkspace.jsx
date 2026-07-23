@@ -6,7 +6,7 @@ export default function EdmWorkspace() {
   const [criteria, setCriteria] = useState({ state: '', policyType: '', status: '' });
   const [preview, setPreview] = useState(null);
   const [subject, setSubject] = useState('');
-  const [body, setBody] = useState('Hi {{fullname}}, ...');
+  const [body, setBody] = useState('');
   const [sendResult, setSendResult] = useState(null);
   const [status, setStatus] = useState(null);
   const [error, setError] = useState(null);
