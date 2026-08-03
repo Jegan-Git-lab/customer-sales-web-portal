@@ -7,7 +7,12 @@ export default function LoginGate() {
     <div className="login-screen">
       <div className="login-card">
         <div className="login-brand">
-          <div className="login-logo">CP</div>
+          <div className="login-logo" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
           <span>Customer Staff Portal</span>
         </div>
 
@@ -26,6 +31,9 @@ export default function LoginGate() {
               <strong>Sign in as Staff</strong>
               <span>Sales &amp; email campaign workspace</span>
             </span>
+            <svg className="persona-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </button>
 
           <button type="button" className="persona-option" onClick={() => signIn('customer')}>
@@ -39,6 +47,9 @@ export default function LoginGate() {
               <strong>Sign in as Customer</strong>
               <span>Profile &amp; support tickets</span>
             </span>
+            <svg className="persona-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" />
+            </svg>
           </button>
         </div>
 
