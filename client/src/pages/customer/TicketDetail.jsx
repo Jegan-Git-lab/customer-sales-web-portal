@@ -56,7 +56,7 @@ export default function TicketDetail() {
   }
 
   if (error) return <p className="error-text">{error}</p>;
-  if (!ticket) return <p className="muted">Loading…</p>;
+  if (!ticket) return <div className="loading-state"><span className="spinner" />Loading…</div>;
 
   return (
     <div>

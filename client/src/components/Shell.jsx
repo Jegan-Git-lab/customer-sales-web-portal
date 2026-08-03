@@ -71,7 +71,7 @@ export default function Shell({ children }) {
       <aside className="sidebar">
         <h1 className={persona === 'staff' ? 'staff-title' : 'customer-title'}>
           <IconBrand />
-          {persona === 'staff' ? 'Staff Portal' : 'Customer Staff Portal'}
+          {persona === 'staff' ? 'Staff Portal' : 'Customer Portal'}
         </h1>
         <nav>
           {links.map((link) => (
@@ -97,7 +97,7 @@ export default function Shell({ children }) {
           </button>
         </div>
       </aside>
-      <main className={`main ${persona === 'staff' ? 'main-staff' : ''}`}>{children}</main>
+      <main className="main">{children}</main>
     </div>
   );
 }

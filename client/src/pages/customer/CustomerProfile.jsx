@@ -54,7 +54,7 @@ export default function CustomerProfile() {
   }, [data]);
 
   if (error) return <p className="error-text">{error}</p>;
-  if (!data) return <p className="muted">Loading…</p>;
+  if (!data) return <div className="loading-state"><span className="spinner" />Loading…</div>;
 
   return (
     <div className="profile-page">

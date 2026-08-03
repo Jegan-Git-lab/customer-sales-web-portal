@@ -184,7 +184,7 @@ export default function SalesWorkspace() {
           <h3>Opportunities</h3>
         </div>
         {loading ? (
-          <p className="muted">Loading…</p>
+          <div className="loading-state"><span className="spinner" />Loading…</div>
         ) : opportunities.length === 0 ? (
           <div className="empty-state">No opportunities found.</div>
         ) : (

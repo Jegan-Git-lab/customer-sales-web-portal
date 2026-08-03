@@ -12,7 +12,16 @@ import TicketDetail from './pages/customer/TicketDetail';
 export default function App() {
   const { persona, loading } = useAuth();
 
-  if (loading) return <div className="login-screen">Loading…</div>;
+  if (loading) {
+    return (
+      <div className="login-screen">
+        <div className="loading-state" style={{ color: '#c3ccdb' }}>
+          <span className="spinner spinner-light" />
+          Loading…
+        </div>
+      </div>
+    );
+  }
 
   if (!persona) {
     return (

@@ -85,7 +85,7 @@ export default function TicketList() {
 
       <div className="card">
         {!tickets ? (
-          <p className="muted">Loading…</p>
+          <div className="loading-state"><span className="spinner" />Loading…</div>
         ) : tickets.length === 0 ? (
           <div className="empty-state">No tickets yet.</div>
         ) : (
