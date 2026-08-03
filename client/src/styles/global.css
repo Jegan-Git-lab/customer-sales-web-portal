@@ -52,7 +52,8 @@ body {
 
 .sidebar h1 svg { flex-shrink: 0; }
 
-.sidebar h1.staff-title { color: #7fb0ff; }
+.sidebar h1.staff-title { color: #38bdf8; }
+.sidebar h1.customer-title { color: #38bdf8; }
 
 .sidebar nav a {
   display: flex;
@@ -494,6 +495,29 @@ table.data-table tbody tr:last-child td { border-bottom: none; }
   border-top: 1px solid var(--sidebar-border);
 }
 
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sidebar-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b6fd6, #63a1ff);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.account-text { min-width: 0; }
+
 .sidebar-footer .account-name {
   color: var(--sidebar-text-strong);
   font-size: 13px;
@@ -524,15 +548,15 @@ table.data-table tbody tr:last-child td { border-bottom: none; }
 
 .sidebar-footer .btn-ghost {
   width: 100%;
-  color: var(--sidebar-text);
-  border-color: var(--sidebar-border);
-  background: transparent;
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(248, 113, 113, 0.08);
 }
 
 .sidebar-footer .btn-ghost:hover {
-  background: var(--sidebar-hover-bg);
-  border-color: var(--sidebar-text);
-  color: var(--sidebar-text-strong);
+  background: rgba(248, 113, 113, 0.16);
+  border-color: #f87171;
+  color: #fca5a5;
 }
 
 button, .btn {
