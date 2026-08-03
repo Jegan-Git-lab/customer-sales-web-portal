@@ -74,7 +74,12 @@ ticketsRouter.get('/:id', attachCustomerContactIfCustomer, async (req, res, next
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    res.json(ticket);
+    const comments = await dataverseClient.retrieveMultiple(
+      'incidentresolutions',
+      `$filter=_incidentid_value eq ${req.params.id}&$select=activityid,description,createdon&$orderby=createdon asc`
+    );
+
+    res.json({ ...ticket, comments });
   } catch (err) {
     next(err);
   }

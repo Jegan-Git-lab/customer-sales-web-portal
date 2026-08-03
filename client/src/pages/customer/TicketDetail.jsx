@@ -1,7 +1,21 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
-import { caseTypeLabel, statusLabel } from '../../lib/ticketLabels';
+import { caseTypeLabel, statusLabel, statusPillClass } from '../../lib/ticketLabels';
+
+function IconMessage() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
 
 export default function TicketDetail() {
   const { id } = useParams();
@@ -46,17 +60,45 @@ export default function TicketDetail() {
 
   return (
     <div>
-      <h2>{ticket.title}</h2>
-      <div className="card">
-        <p><span className="status-pill">{statusLabel(ticket.statuscode)}</span> · {caseTypeLabel(ticket.casetypecode)}</p>
-        <p>{ticket.description}</p>
-        <p className="muted">Opened {ticket.createdon?.slice(0, 10)}</p>
+      <div className="workspace-header">
+        <div>
+          <h2>{ticket.title}</h2>
+          <p className="muted">Opened {ticket.createdon?.slice(0, 10)} · {caseTypeLabel(ticket.casetypecode)}</p>
+        </div>
+        <span className={`status-pill ${statusPillClass(ticket.statuscode)}`}>{statusLabel(ticket.statuscode)}</span>
       </div>
 
+      {ticket.description && (
+        <div className="card">
+          <p>{ticket.description}</p>
+        </div>
+      )}
+
       <div className="card">
-        <h3>Add a comment</h3>
+        <div className="card-header">
+          <h3>Activity</h3>
+        </div>
+
+        {ticket.comments?.length > 0 ? (
+          <div className="comment-timeline">
+            {ticket.comments.map((c, i) => (
+              <div className="comment-item" key={c.activityid}>
+                {i < ticket.comments.length - 1 && <span className="comment-line" />}
+                <span className="comment-dot"><IconMessage /></span>
+                <div className="comment-content">
+                  <div className="comment-meta">{formatDateTime(c.createdon)}</div>
+                  <div className="comment-text">{c.description}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="muted" style={{ marginBottom: 20 }}>No comments yet.</p>
+        )}
+
         <form onSubmit={submitComment}>
           <div className="field">
+            <label>Add a comment</label>
             <textarea rows={3} value={comment} onChange={(e) => setComment(e.target.value)} />
           </div>
           <button type="submit" disabled={submitting}>Add comment</button>

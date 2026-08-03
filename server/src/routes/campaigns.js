@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireStaff } from '../auth/middleware.js';
 import { dataverseClient, CAMPAIGN_EVENT_TYPE_LABELS } from '../dataverse/client.js';
-import { sendCampaignBatches } from '../services/acsEmail.js';
+import { sendCampaignBatches, renderTemplate } from '../services/acsEmail.js';
 
 export const campaignsRouter = Router();
 
@@ -39,6 +39,22 @@ campaignsRouter.post('/send', requireStaff, async (req, res, next) => {
     // background queue rather than awaiting inline.
     await Promise.all(
       operations.map((op) => dataverseClient.recordCampaignResponse(campaignRun.new_campaignrunid, op.contactId, 'Sent'))
+    );
+
+    // Also log a completed Email activity per recipient so the send shows
+    // up natively on the Contact's Activity Timeline. Best-effort: the
+    // email has already gone out via ACS by this point, so a Dataverse
+    // logging hiccup here shouldn't turn a successful send into an
+    // error response — just note it and move on.
+    const membersById = new Map(members.map((m) => [m.contactid, m]));
+    await Promise.all(
+      operations.map((op) => {
+        const member = membersById.get(op.contactId);
+        const body = member ? renderTemplate(templateBody, member) : templateBody;
+        return dataverseClient.logEmailActivity(op.contactId, templateSubject, body).catch((err) => {
+          console.error(`[campaigns.send] logEmailActivity failed for contact ${op.contactId}:`, err.message);
+        });
+      })
     );
 
     res.status(201).json({

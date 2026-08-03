@@ -26,3 +26,16 @@ export function caseTypeLabel(code) {
 export function statusLabel(code) {
   return STATUS_LABELS[code] ?? code;
 }
+
+// Maps statuscode to a .status-pill modifier class so ticket lists read
+// at a glance: resolved reads green, cancelled reads red, everything
+// still-open (in progress/on hold/etc.) stays the neutral default.
+export function statusPillClass(code) {
+  if (code === 5) return 'ok';
+  if (code === 6) return 'danger';
+  return '';
+}
+
+export function isOpenStatus(code) {
+  return code !== 5 && code !== 6 && code !== 2000;
+}

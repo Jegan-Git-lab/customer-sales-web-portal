@@ -18,7 +18,9 @@ export default function Shell({ children }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <h1>Contoso Portal</h1>
+        <h1 className={persona === 'staff' ? 'staff-title' : ''}>
+          {persona === 'staff' ? 'Staff Portal' : 'Customer Staff Portal'}
+        </h1>
         <nav>
           {links.map((link) => (
             <NavLink key={link.to} to={link.to} className={({ isActive }) => (isActive ? 'active' : '')}>
@@ -26,14 +28,18 @@ export default function Shell({ children }) {
             </NavLink>
           ))}
         </nav>
-        <div style={{ marginTop: 32 }}>
-          <div className="muted">{account?.name ?? account?.username}</div>
-          <button onClick={signOut} style={{ marginTop: 8, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--line)' }}>
+        <div className="sidebar-footer">
+          <div className="account-name">{account?.name ?? account?.username}</div>
+          {account?.name && account?.username && (
+            <div className="account-email muted">{account.username}</div>
+          )}
+          <span className={`role-badge ${persona}`}>{persona}</span>
+          <button className="btn-ghost" onClick={signOut}>
             Sign out
           </button>
         </div>
       </aside>
-      <main className="main">{children}</main>
+      <main className={`main ${persona === 'staff' ? 'main-staff' : ''}`}>{children}</main>
     </div>
   );
 }

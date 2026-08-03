@@ -112,6 +112,10 @@ export const dataverseClient = {
     );
     return parseJsonOrNull(response);
   },
+
+  async delete(entitySet, id) {
+    await authorizedFetch(`/${entitySet}(${id})`, { method: 'DELETE' }, `delete:${entitySet}`);
+  },
  
   /**
    * Moves the Business Process Flow pointer on an opportunity to the given
@@ -256,6 +260,33 @@ export const dataverseClient = {
     console.log('[getSegmentMembers] odataQuery:', odataQuery);
     return this.retrieveMultiple('contacts', odataQuery);
   },
+
+  // Requires a `new_segment` custom table in this environment — it does not
+  // exist in the schema today (see the note above on createCampaignRun: no
+  // Segment entity backs new_campaignrun.new_segmentid). Create it via the
+  // Power Apps maker portal before these three methods will work:
+  //   Table: new_segment (plural new_segments)
+  //   Primary column: new_name — Text, required (this is the table's
+  //     required primary/name column)
+  //   Column: new_criteria — Text, multiple lines, ~2000 max length
+  //     (stores JSON.stringify({ state, policyType, status }))
+  async listSavedSegments() {
+    return this.retrieveMultiple(
+      'new_segments',
+      '$select=new_segmentid,new_name,new_criteria&$orderby=new_name asc'
+    );
+  },
+
+  async createSavedSegment(name, criteria) {
+    return this.create('new_segments', {
+      new_name: name,
+      new_criteria: JSON.stringify(criteria),
+    });
+  },
+
+  async deleteSavedSegment(id) {
+    return this.delete('new_segments', id);
+  },
  
   // Verified against this environment's actual Dataverse schema
   // (EntityDefinitions for new_campaignrun / new_campaignresponse) —
@@ -286,5 +317,32 @@ export const dataverseClient = {
       new_eventtype: eventTypeValue,
       new_eventtimestamp: new Date().toISOString(),
     });
+  },
+
+  /**
+   * Logs a completed, outgoing standard `email` Activity tagged to the
+   * contact via `email_activity_parties` (participationtypemask 2 = To),
+   * so the send shows up on the Contact's native Activity Timeline — the
+   * `new_campaignresponse` record above is the structured/queryable side,
+   * this is the human-visible counterpart in the CRM UI.
+   *
+   * This ONLY creates a Dataverse record — the email itself was already
+   * sent via ACS (acsEmail.js); Dataverse's own send pipeline is never
+   * invoked, so this can't trigger a duplicate/real send.
+   *
+   * Activities can't be created directly in a Completed state — create
+   * defaults to Open/Draft, then a second call moves it to
+   * Completed/Sent (statecode=1/statuscode=3), matching how you'd log
+   * correspondence that happened outside Dataverse.
+   */
+  async logEmailActivity(contactId, subject, body) {
+    const created = await this.create('emails', {
+      subject,
+      description: body,
+      directioncode: true,
+      email_activity_parties: [{ 'partyid_contact@odata.bind': `/contacts(${contactId})`, participationtypemask: 2 }],
+    });
+    await this.update('emails', created.activityid, { statecode: 1, statuscode: 3 });
+    return created;
   },
 };
