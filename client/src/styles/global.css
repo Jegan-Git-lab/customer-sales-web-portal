@@ -13,6 +13,9 @@
   --warn-soft: #fdecd2;
   --danger: #cb3038;
   --ok: #15934c;
+  --ok-soft: #e3f6ea;
+  --purple: #6d3bc9;
+  --purple-soft: #efe6fb;
   --role-accent: #0e9384;
   --radius: 6px;
   --sidebar-bg: #183b6a;
@@ -137,6 +140,16 @@ th {
   margin-bottom: 10px;
 }
 
+.stat-row .stat-tile:nth-child(4n+1) .stat-icon { background: var(--ok-soft); color: var(--ok); }
+.stat-row .stat-tile:nth-child(4n+2) .stat-icon { background: var(--info-soft); color: var(--info); }
+.stat-row .stat-tile:nth-child(4n+3) .stat-icon { background: var(--warn-soft); color: var(--warn); }
+.stat-row .stat-tile:nth-child(4n+4) .stat-icon { background: var(--purple-soft); color: var(--purple); }
+
+.stat-row .stat-tile:nth-child(4n+1) .stat-value { color: var(--ok); }
+.stat-row .stat-tile:nth-child(4n+2) .stat-value { color: var(--info); }
+.stat-row .stat-tile:nth-child(4n+3) .stat-value { color: var(--warn); }
+.stat-row .stat-tile:nth-child(4n+4) .stat-value { color: var(--purple); }
+
 .pipeline-summary {
   display: flex;
   gap: 12px;
@@ -168,6 +181,11 @@ th {
 .pipeline-stage .stage-name { font-size: 13px; color: var(--muted); }
 .pipeline-stage .stage-value { font-size: 20px; font-weight: 600; margin: 4px 0; font-variant-numeric: tabular-nums; }
 .pipeline-stage .stage-count { font-size: 12px; color: var(--muted); }
+
+.pipeline-stage[data-stage="1"] .stage-value { color: var(--warn); }
+.pipeline-stage[data-stage="2"] .stage-value { color: #e28935; }
+.pipeline-stage[data-stage="3"] .stage-value { color: var(--info); }
+.pipeline-stage[data-stage="4"] .stage-value { color: var(--ok); }
 
 .stage-bar-track {
   height: 4px;
