@@ -3,9 +3,11 @@ import { useAuth } from '../hooks/AuthContext';
 
 function IconSales() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 17l6-6 4 4 8-8" />
-      <path d="M15 7h6v6" />
+    <svg width="16" height="16" viewBox="0 0 24 24">
+      <circle cx="6.5" cy="6.5" r="4.5" fill="#a3e635" stroke="#65a30d" strokeWidth="1" />
+      <rect x="3" y="17" width="3.6" height="4" rx="1" fill="#22c55e" />
+      <rect x="9" y="13" width="3.6" height="8" rx="1" fill="#3b82f6" />
+      <rect x="15" y="8" width="3.6" height="13" rx="1" fill="#14b8a6" />
     </svg>
   );
 }
@@ -21,18 +23,47 @@ function IconMail() {
 
 function IconBrand() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z" />
-      <path d="M9 12l2 2 4-4" />
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path d="M5 21c0-3.9 2.7-6.5 7-6.5s7 2.6 7 6.5" fill="#60a5fa" />
+      <circle cx="12" cy="7.6" r="4.5" fill="#3b82f6" />
+      <circle cx="12" cy="9.3" r="4" fill="#f8c9a0" />
+      <circle cx="7.3" cy="9.3" r="1.3" fill="#3b82f6" />
+      <circle cx="16.7" cy="9.3" r="1.3" fill="#3b82f6" />
+      <path d="M7.3 8a4.7 4.7 0 0 1 9.4 0" fill="none" stroke="#1d4ed8" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="9.3" y="19" width="5.4" height="2.6" rx="0.7" fill="#2dd4bf" />
+    </svg>
+  );
+}
+
+function IconStaffTeam() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path d="M6.5 21c0-4.5 2.5-7.5 5.5-7.5s5.5 3 5.5 7.5" fill="#94a3b8" />
+      <circle cx="12" cy="7" r="3.2" fill="#94a3b8" />
+      <circle cx="17" cy="4" r="2.1" fill="#f97316" />
+      <rect x="16.3" y="0.9" width="1.4" height="1.4" fill="#f97316" />
+      <rect x="16.3" y="5.7" width="1.4" height="1.4" fill="#f97316" />
+      <rect x="13.9" y="3.3" width="1.4" height="1.4" fill="#f97316" />
+      <rect x="18.7" y="3.3" width="1.4" height="1.4" fill="#f97316" />
+      <path d="M2.5 21c0-3.6 2-6 4.5-6s4.5 2.4 4.5 6" fill="#ef4444" />
+      <circle cx="7" cy="10.2" r="2.7" fill="#ef4444" />
+      <path d="M12.5 21c0-3.6 2-6 4.5-6s4.5 2.4 4.5 6" fill="#3b82f6" />
+      <circle cx="17" cy="10.2" r="2.7" fill="#3b82f6" />
     </svg>
   );
 }
 
 function IconProfile() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4" />
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    <svg width="16" height="16" viewBox="0 0 24 24">
+      <defs>
+        <linearGradient id="navProfileGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="100%" stopColor="#15934c" />
+        </linearGradient>
+      </defs>
+      <circle cx="12" cy="8" r="4" fill="url(#navProfileGrad)" />
+      <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="url(#navProfileGrad)" />
     </svg>
   );
 }
@@ -70,7 +101,7 @@ export default function Shell({ children }) {
     <div className="app-shell">
       <aside className="sidebar">
         <h1 className={persona === 'staff' ? 'staff-title' : 'customer-title'}>
-          <IconBrand />
+          {persona === 'staff' ? <IconStaffTeam /> : <IconBrand />}
           {persona === 'staff' ? 'Staff Portal' : 'Customer Portal'}
         </h1>
         <nav>
